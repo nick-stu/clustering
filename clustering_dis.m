@@ -11,7 +11,7 @@ function [ mdl ] = clustering_dis( data )
     dis = zeros(1, num);
     p_label = 1:num; % data标志序列
     total=pdist2(data,data); % 这里是平均距离
-    threshold = sum(total(:))/(num*(num-1));% - std(total(total~=0));
+    threshold = sum(total(:))/(num*(num-1)) - std(total(total~=0));
     fprintf('threshold: %s ',threshold);
     %% 找出两两距离最小的两个点
     D = pdist2(data, data);
@@ -37,19 +37,19 @@ function [ mdl ] = clustering_dis( data )
     label(1)=1;
     for i=2:num
         min_d = Inf;
-        min_ratio = Inf;
+        min_avg = Inf;
         for j=1:size(data, 1)% 寻找最类似于已有集的点
             cursor = find(class_label==classFlag);
-            [ratio,d] = distanceChange(data(j, :), mdl.data(cursor,:));% 以平均距离变化为判断基准，只有一个点时用距离判断
-            if ratio < min_ratio
-                min_ratio = ratio;
+            [d,avg] = distanceChange(data(j, :), mdl.data(cursor,:));% 注意d和avg的区别
+            if d < min_d
                 min_d = d;
                 min_i = j;
+                min_avg = avg;
             end
         end
-        dis(i) = min_d;
-        minMat=[minMat min_d];
-        if dis(i) <= threshold % || dis(i) < dis(i - 1)
+        dis(i) = min_avg;
+        minMat=[minMat min_avg];
+        if dis(i) <= threshold  || dis(i) < dis(i - 1)
             class_label(p_label(min_i))=classFlag;
             label(i)=label(i-1);
         else
