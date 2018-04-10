@@ -1,5 +1,4 @@
 function [ mdl ] = clustering_dis( data )
-% 阈值基于平均距离决定是否分类
 % mdl.data: 聚类的训练样本
 % mdl.label: 聚类的训练样本的分类
 % mdl.classNum: 聚类后形成的类的数量
@@ -21,26 +20,23 @@ function [ mdl ] = clustering_dis( data )
     index = i(index);
     % 将两个点中的其中一个放入到 finded 数据中
     finded = data(index, :);
-    data(index, :) = [];% 在data集中去掉该数据
-    pre_index(index) = 1;% 标明该数据为第几个选上
-    p_label(index) = [];% 从序列中抹掉
+    data(index, :) = []; % 在data集中去掉该数据
+    pre_index(index) = 1; % 标明该数据为第几个选上
+    p_label(index) = []; % 从序列中抹掉
 
-    class_label=zeros(1, num);% 表示第几行数据是哪一类
+    class_label=zeros(1, num);% 表示第几个样本是哪一类
     class_label(index)=1;
-    %% 聚类, 将 当前类 数组中的点与剩余点计算两两距离，找出最小距离，将这个点也加入到 该类 数组中
-    % 先将一定为同一类区分
-    % 1. 低于阈值
-    % 2. 比上一个的距离小
+    %% 聚类, 将 当前类 中的点与剩余点计算两两距离，找出最小距离，将这个点也加入到 该类 点集中
     minMat=[];
     classFlag=1;
-    dis(1)=Inf;
+    dis(1)=0;
     label(1)=1;
     for i=2:num
         min_d = Inf;
         min_avg = Inf;
         for j=1:size(data, 1)% 寻找最类似于已有集的点
             cursor = find(class_label==classFlag);
-            [d,avg] = distanceChange(data(j, :), mdl.data(cursor,:));% 注意d和avg的区别
+            [d,avg] = distanceChange(data(j, :), mdl.data(cursor,:));% 注意d和avg可能存在的区别
             if d < min_d
                 min_d = d;
                 min_i = j;
@@ -49,7 +45,7 @@ function [ mdl ] = clustering_dis( data )
         end
         dis(i) = min_avg;
         minMat=[minMat min_avg];
-        if dis(i) <= threshold  || dis(i) < dis(i - 1)
+        if dis(i) <= threshold
             class_label(p_label(min_i))=classFlag;
             label(i)=label(i-1);
         else
@@ -62,19 +58,20 @@ function [ mdl ] = clustering_dis( data )
         pre_index(p_label(min_i)) = i;
         p_label(min_i) = [];
     end
-
-    figure;
-    plot(minMat);
-    hold on;
-    plot([0, num + 1], [threshold, threshold]);
-    xlim([0, num + 1]);
-    for i=1:num
-        text(i, dis(i), num2str(find(pre_index==i)));
-    end
+    %%
+%     figure;
+%     plot(minMat);
+%     title('样本与类的平均距离和样本号');
+%     hold on;
+%     plot([0, num + 1], [threshold, threshold]);
+%     xlim([0, num + 1]);
+%     for i=1:num
+%         text(i, dis(i), num2str(find(pre_index==i)));
+%     end
     %% 
     classNum=max(class_label);
-    dis(1) = dis(2);
 %     figure;
+%     title('未进行合并相似类前的样本与类的平均距离与样本归属类');
 %     plot(dis);
 %     hold on;
 %     plot([0, num + 1], [threshold, threshold]);
