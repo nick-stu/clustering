@@ -11,7 +11,7 @@ function [ mdl ] = clustering_dis( data )
     p_label = 1:num; % data标志序列
     total=pdist2(data,data); % 这里是平均距离
     threshold = sum(total(:))/(num*(num-1)) - std(total(total~=0));
-    fprintf('threshold: %s ',threshold);
+%     fprintf('threshold: %s ',threshold);
     %% 找出两两距离最小的两个点
     D = pdist2(data, data);
     D(D == 0) = Inf;
@@ -96,7 +96,7 @@ function [ mdl ] = clustering_dis( data )
                 continue
             end
             index = find(label == j); % 另一个类的
-            if size(index, 2) < size(data1, 1) % 若是个小类，则继续运行
+            if size(index, 2) < size(data1, 1) % 若是个大类，则继续运行
                 continue
             end
             data2 = data(index, :); % 新类的数据
@@ -108,7 +108,7 @@ function [ mdl ] = clustering_dis( data )
             end
         end
 %         fprintf('%d %d %.4f %d\n', i, min_j, min_d, sum(label == i));
-        if min_d < 1.05
+        if min_d < 1.05 || size(data1,1)<=3
             label(label == i) = min_j;
         end
     end
@@ -140,7 +140,8 @@ function [ mdl ] = clustering_dis( data )
     label = label(pre_index);
     %% 查看分类效果
     figure;
-    scatter(1:num,label,'k'); 
+    scatter(1:num,label,'k'); hold on;
+    plot([num/2+0.5 num/2+0.5],[0,classNum+1],'r--');
     ylim([0,classNum+1]);
     
     mdl.label = label;
